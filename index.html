@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポモドーロタイマー</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .timer-display {
+            font-size: 72px;
+            font-weight: 300;
+            color: #333;
+            margin: 30px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .status {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 20px;
+            height: 30px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .start-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .start-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .pause-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .pause-btn:hover {
+            background-color: #e68900;
+        }
+        
+        .reset-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background-color: #da190b;
+        }
+        
+        .session-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .settings {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        
+        .setting-section {
+            margin-bottom: 25px;
+        }
+        
+        .setting-section h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .loop-settings {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .loop-settings label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .loop-count-input {
+            width: 60px;
+            padding: 5px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+            margin-left: 10px;
+        }
+        
+        .task-list {
+            margin: 20px 0;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .task-item.active {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+        }
+        
+        .task-name {
+            flex: 1;
+            text-align: left;
+            padding: 0 10px;
+        }
+        
+        .task-duration {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .task-duration input {
+            width: 60px;
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .task-duration select {
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .delete-task-btn {
+            padding: 5px 10px;
+            font-size: 14px;
+            background-color: #f44336;
+            color: white;
+            margin-left: 10px;
+        }
+        
+        .delete-task-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .delete-task-btn:disabled:hover {
+            background-color: #ccc;
+        }
+        
+        input[type="radio"]:disabled + label,
+        input[type="number"]:disabled,
+        select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .sound-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .sound-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .add-task-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+        }
+        
+        .add-task-section input {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .add-task-section .duration-input {
+            width: 60px;
+            flex: none;
+        }
+        
+        .add-task-section select {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .add-task-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .add-task-btn:hover {
+            background-color: #1976D2;
+        }
+        
+        .work-mode {
+            background-color: #e8f5e9;
+        }
+        
+        .break-mode {
+            background-color: #fff3e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sound-toggle">
+            <label>
+                <input type="checkbox" id="soundToggle" checked>
+                サウンド
+            </label>
+        </div>
+        
+        <h1>ポモドーロタイマー</h1>
+        
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        
+        <div class="status" id="status">作業時間</div>
+        
+        <div class="controls">
+            <button class="start-btn" id="startBtn">開始</button>
+            <button class="pause-btn" id="pauseBtn" style="display: none;">一時停止</button>
+            <button class="reset-btn" id="resetBtn">リセット</button>
+        </div>
+        
+        <div class="session-info">
+            <div>現在のタスク: <span id="currentTaskIndex">1</span>/<span id="totalTasks">3</span></div>
+            <div>完了サイクル: <span id="completedCycles">0</span><span id="totalCycles"></span></div>
+        </div>
+        
+        <div class="settings">
+            <div class="setting-section">
+                <h3>ループ設定</h3>
+                <div class="loop-settings">
+                    <label>
+                        <input type="radio" name="loopType" value="infinite" checked id="infiniteLoop">
+                        無限ループ
+                    </label>
+                    <label>
+                        <input type="radio" name="loopType" value="count" id="countLoop">
+                        回数指定
+                        <input type="number" class="loop-count-input" id="loopCount" value="4" min="1" max="99" disabled>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="setting-section">
+                <h3>タスク設定</h3>
+                <div class="task-list" id="taskList">
+                    <!-- タスクはJavaScriptで動的に生成 -->
+                </div>
+                <div class="add-task-section">
+                    <input type="text" id="newTaskName" placeholder="新しいタスク名">
+                    <input type="number" class="duration-input" id="newTaskDuration" value="25" min="1">
+                    <select id="newTaskUnit">
+                        <option value="minutes">分</option>
+                        <option value="seconds">秒</option>
+                    </select>
+                    <button class="add-task-btn" id="addTaskBtn">追加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 初期タスクリスト
+        let tasks = [
+            { name: '作業時間', duration: 25, unit: 'minutes' },
+            { name: '休憩時間', duration: 5, unit: 'minutes' },
+            { name: '長い休憩', duration: 15, unit: 'minutes' }
+        ];
+        
+        let timer = null;
+        let timeLeft = 0;
+        let isRunning = false;
+        let currentTaskIndex = 0;
+        let completedCycles = 0;
+        let loopType = 'infinite';
+        let loopCount = 4;
+        let soundEnabled = true;
+        
+        const timerDisplay = document.getElementById('timerDisplay');
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const currentTaskIndexDisplay = document.getElementById('currentTaskIndex');
+        const totalTasksDisplay = document.getElementById('totalTasks');
+        const completedCyclesDisplay = document.getElementById('completedCycles');
+        const totalCyclesDisplay = document.getElementById('totalCycles');
+        const taskListContainer = document.getElementById('taskList');
+        const container = document.querySelector('.container');
+        const loopCountInput = document.getElementById('loopCount');
+        const soundToggle = document.getElementById('soundToggle');
+        
+        // 音声通知用
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playNotificationSound() {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+        
+        function getTaskDurationInSeconds(task) {
+            return task.unit === 'minutes' ? task.duration * 60 : task.duration;
+        }
+        
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function updateStatus() {
+            const currentTask = tasks[currentTaskIndex];
+            status.textContent = currentTask.name;
+            currentTaskIndexDisplay.textContent = currentTaskIndex + 1;
+            totalTasksDisplay.textContent = tasks.length;
+            
+            // 作業/休憩モードの背景色切り替え
+            if (currentTask.name.includes('休憩')) {
+                container.classList.remove('work-mode');
+                container.classList.add('break-mode');
+            } else {
+                container.classList.remove('break-mode');
+                container.classList.add('work-mode');
+            }
+        }
+        
+        function updateCycleDisplay() {
+            completedCyclesDisplay.textContent = completedCycles;
+            if (loopType === 'count') {
+                totalCyclesDisplay.textContent = `/${loopCount}`;
+            } else {
+                totalCyclesDisplay.textContent = '';
+            }
+        }
+        
+        function renderTaskList() {
+            taskListContainer.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                if (index === currentTaskIndex && isRunning) {
+                    taskItem.classList.add('active');
+                }
+                
+                taskItem.innerHTML = `
+                    <div class="task-name">${task.name}</div>
+                    <div class="task-duration">
+                        <input type="number" value="${task.duration}" min="1" data-index="${index}" class="duration-edit" ${isRunning || startBtn.textContent === '再開' ? 'disabled' : ''}>
+                        <select data-index="${index}" class="unit-edit" ${isRunning || startBtn.textContent === '再開' ? 'disabled' : ''}>
+                            <option value="minutes" ${task.unit === 'minutes' ? 'selected' : ''}>分</option>
+                            <option value="seconds" ${task.unit === 'seconds' ? 'selected' : ''}>秒</option>
+                        </select>
+                    </div>
+                    <button class="delete-task-btn" data-index="${index}" ${startBtn.textContent !== '開始' ? 'disabled' : ''}>削除</button>
+                `;
+                
+                taskListContainer.appendChild(taskItem);
+            });
+            
+            totalTasksDisplay.textContent = tasks.length;
+        }
+        
+        function nextTask() {
+            // 次のタスクへ
+            currentTaskIndex++;
+            
+            // 全タスク完了
+            if (currentTaskIndex >= tasks.length) {
+                currentTaskIndex = 0;
+                completedCycles++;
+                updateCycleDisplay();
+                
+                // ループ回数チェック
+                if (loopType === 'count' && completedCycles >= loopCount) {
+                    isRunning = false;
+                    startBtn.style.display = 'inline-block';
+                    pauseBtn.style.display = 'none';
+                    startBtn.textContent = '開始';
+                    alert('指定されたサイクル数を完了しました！');
+                    
+                    // コントロールの状態を更新
+                    updateControlsState();
+                    return;
+                }
+            }
+            
+            timeLeft = getTaskDurationInSeconds(tasks[currentTaskIndex]);
+            updateStatus();
+            updateDisplay();
+            renderTaskList();
+            
+            // isRunningをfalseにして、startTimerが実行できるようにする
+            isRunning = false;
+            
+            // 自動的に次のタイマーを開始
+            startTimer();
+        }
+        
+        function updateControlsState() {
+            // ループ設定の有効/無効を切り替え
+            document.getElementById('infiniteLoop').disabled = isRunning;
+            document.getElementById('countLoop').disabled = isRunning;
+            loopCountInput.disabled = isRunning || loopType === 'infinite';
+            
+            // タスクリストを再描画（削除ボタンの状態を更新）
+            renderTaskList();
+        }
+        
+        function startTimer(playSound = false) {
+            if (!isRunning && tasks.length > 0) {
+                isRunning = true;
+                startBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+                
+                if (timeLeft === 0) {
+                    timeLeft = getTaskDurationInSeconds(tasks[currentTaskIndex]);
+                }
+                
+                // 開始時にタスクリストを更新してアクティブ表示
+                renderTaskList();
+                
+                // コントロールの状態を更新
+                updateControlsState();
+                
+                // 初回開始時に音を鳴らす
+                if (playSound) {
+                    playNotificationSound();
+                }
+                
+                timer = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay();
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        playNotificationSound();
+                        
+                        // 次のタスクへ移動
+                        setTimeout(nextTask, 1000);
+                    }
+                }, 1000);
+            }
+        }
+        
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timer);
+                startBtn.style.display = 'inline-block';
+                pauseBtn.style.display = 'none';
+                startBtn.textContent = '再開';
+                
+                // コントロールの状態を更新
+                updateControlsState();
+            }
+        }
+        
+        function resetTimer() {
+            isRunning = false;
+            clearInterval(timer);
+            currentTaskIndex = 0;
+            completedCycles = 0;
+            timeLeft = tasks.length > 0 ? getTaskDurationInSeconds(tasks[0]) : 0;
+            updateDisplay();
+            updateStatus();
+            updateCycleDisplay();
+            renderTaskList();
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            startBtn.textContent = '開始';
+            
+            // コントロールの状態を更新
+            updateControlsState();
+        }
+        
+        // イベントリスナー
+        startBtn.addEventListener('click', () => {
+            // 初回開始時（リセット後の開始時）は音を鳴らす
+            const isInitialStart = startBtn.textContent === '開始';
+            startTimer(isInitialStart);
+        });
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        
+        // ループ設定
+        document.querySelectorAll('input[name="loopType"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                loopType = e.target.value;
+                loopCountInput.disabled = loopType === 'infinite';
+                updateCycleDisplay();
+            });
+        });
+        
+        loopCountInput.addEventListener('change', (e) => {
+            loopCount = parseInt(e.target.value) || 1;
+            updateCycleDisplay();
+        });
+        
+        // タスク追加
+        document.getElementById('addTaskBtn').addEventListener('click', () => {
+            const name = document.getElementById('newTaskName').value.trim();
+            const duration = parseInt(document.getElementById('newTaskDuration').value) || 1;
+            const unit = document.getElementById('newTaskUnit').value;
+            
+            if (name) {
+                tasks.push({ name, duration, unit });
+                renderTaskList();
+                document.getElementById('newTaskName').value = '';
+                
+                if (tasks.length === 1 && !isRunning) {
+                    resetTimer();
+                }
+            }
+        });
+        
+        // タスクリストのイベント委譲
+        taskListContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-task-btn')) {
+                const index = parseInt(e.target.dataset.index);
+                if (tasks.length > 1) {
+                    tasks.splice(index, 1);
+                    if (currentTaskIndex >= tasks.length) {
+                        currentTaskIndex = 0;
+                    }
+                    if (!isRunning) {
+                        resetTimer();
+                    } else {
+                        renderTaskList();
+                        updateStatus();
+                    }
+                } else {
+                    alert('最低1つのタスクが必要です');
+                }
+            }
+        });
+        
+        taskListContainer.addEventListener('change', (e) => {
+            const index = parseInt(e.target.dataset.index);
+            
+            if (e.target.classList.contains('duration-edit')) {
+                tasks[index].duration = parseInt(e.target.value) || 1;
+                if (!isRunning && index === currentTaskIndex) {
+                    timeLeft = getTaskDurationInSeconds(tasks[index]);
+                    updateDisplay();
+                }
+            } else if (e.target.classList.contains('unit-edit')) {
+                tasks[index].unit = e.target.value;
+                if (!isRunning && index === currentTaskIndex) {
+                    timeLeft = getTaskDurationInSeconds(tasks[index]);
+                    updateDisplay();
+                }
+            }
+        });
+        
+        // サウンドのON/OFF切り替え
+        soundToggle.addEventListener('change', (e) => {
+            soundEnabled = e.target.checked;
+        });
+        
+        // 初期化
+        resetTimer();
+        renderTaskList();
+    </script>
+</body>
+</html>
