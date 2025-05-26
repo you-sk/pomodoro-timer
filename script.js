@@ -294,3 +294,9 @@ document.addEventListener('DOMContentLoaded', () => {
     resetTimer();
     renderTaskList();
 });
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        getTaskDurationInSeconds
+    };
+}
