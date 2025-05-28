@@ -2,6 +2,11 @@
 
 シンプルで使いやすいウェブベースのポモドーロタイマーアプリケーションです。作業と休憩を効果的に管理し、生産性を向上させることができます。
 
+https://you-sk.github.io/pomodoro-timer/
+
+![image](https://github.com/user-attachments/assets/c5c48bae-f368-48e6-a9be-b1940dc27288)
+
+
 ## 主な機能
 
 - 🎯 カスタマイズ可能な作業時間と休憩時間
