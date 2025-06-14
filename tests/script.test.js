@@ -20,6 +20,8 @@ function setupDOM() {
             <input type="number" id="newTaskDuration" value="30">
             <select id="newTaskUnit"><option value="minutes">分</option></select>
             <button id="addTaskBtn">追加</button>
+            <button id="saveTasksBtn">保存</button>
+            <button id="resetDefaultBtn">デフォルトに戻す</button>
         </div>
     `;
 }
@@ -37,6 +39,7 @@ beforeEach(() => {
 afterEach(() => {
     jest.clearAllTimers();
     document.body.innerHTML = '';
+    localStorage.clear();
 });
 
 describe('ポモドーロタイマー基本機能テスト', () => {
@@ -124,5 +127,33 @@ describe('タイマー時間計算テスト', () => {
         const task = { duration: 30, unit: 'seconds' };
         const { getTaskDurationInSeconds } = require('../script.js');
         expect(getTaskDurationInSeconds(task)).toBe(30);
+    });
+});
+
+describe('タスク保存機能テスト', () => {
+    test('タスク保存後に再読み込みしても保持される', () => {
+        document.getElementById('newTaskName').value = '保存タスク';
+        document.getElementById('addTaskBtn').click();
+        document.getElementById('saveTasksBtn').click();
+
+        jest.resetModules();
+        setupDOM();
+        require('../script.js');
+        const event = new Event('DOMContentLoaded');
+        document.dispatchEvent(event);
+        jest.runOnlyPendingTimers();
+
+        expect(document.querySelectorAll('#taskList .task-item').length).toBe(4);
+    });
+
+    test('デフォルトに戻すとlocalStorageがクリアされる', () => {
+        document.getElementById('newTaskName').value = '一時タスク';
+        document.getElementById('addTaskBtn').click();
+        document.getElementById('saveTasksBtn').click();
+
+        document.getElementById('resetDefaultBtn').click();
+
+        expect(localStorage.getItem('tasks')).toBeNull();
+        expect(document.querySelectorAll('#taskList .task-item').length).toBe(3);
     });
 });
