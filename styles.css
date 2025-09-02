@@ -249,6 +249,13 @@ select:disabled {
     border-radius: 5px;
 }
 
+.save-section {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
 .add-task-btn {
     padding: 8px 16px;
     font-size: 14px;

@@ -1,9 +1,11 @@
 // 初期タスクリスト
-let tasks = [
+const defaultTasks = [
     { name: '作業時間', duration: 25, unit: 'minutes' },
     { name: '休憩時間', duration: 5, unit: 'minutes' },
     { name: '長い休憩', duration: 15, unit: 'minutes' }
 ];
+
+let tasks = [];
 
 let timer = null;
 let timeLeft = 0;
@@ -28,6 +30,33 @@ const taskListContainer = document.getElementById('taskList');
 const container = document.querySelector('.container');
 const loopCountInput = document.getElementById('loopCount');
 const soundToggle = document.getElementById('soundToggle');
+const saveTasksBtn = document.getElementById('saveTasksBtn');
+const resetDefaultBtn = document.getElementById('resetDefaultBtn');
+
+// localStorage操作
+function loadTasks() {
+    const stored = localStorage.getItem('tasks');
+    if (stored) {
+        try {
+            tasks = JSON.parse(stored);
+        } catch (e) {
+            tasks = JSON.parse(JSON.stringify(defaultTasks));
+        }
+    } else {
+        tasks = JSON.parse(JSON.stringify(defaultTasks));
+    }
+}
+
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function resetToDefault() {
+    tasks = JSON.parse(JSON.stringify(defaultTasks));
+    localStorage.removeItem('tasks');
+    resetTimer();
+    renderTaskList();
+}
 
 // 音声通知用
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -207,6 +236,7 @@ function resetTimer() {
 
 // イベントリスナーの設定
 document.addEventListener('DOMContentLoaded', () => {
+    loadTasks();
     startBtn.addEventListener('click', () => {
         const isInitialStart = startBtn.textContent === '開始';
         startTimer(isInitialStart);
@@ -290,6 +320,9 @@ document.addEventListener('DOMContentLoaded', () => {
         soundEnabled = e.target.checked;
     });
 
+    saveTasksBtn.addEventListener('click', saveTasks);
+    resetDefaultBtn.addEventListener('click', resetToDefault);
+
     // 初期化
     resetTimer();
     renderTaskList();
@@ -297,6 +330,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        getTaskDurationInSeconds
+        getTaskDurationInSeconds,
+        loadTasks,
+        saveTasks,
+        resetToDefault,
+        defaultTasks
     };
 }
